@@ -24,6 +24,7 @@
 #include "zfile.h"
 
 unsigned prefs_chipmem_size;
+unsigned prefs_bogomem_size;
 
 #ifdef USE_MAPPED_MEMORY
 #include <sys/mman.h>
@@ -1128,7 +1129,7 @@ static void allocate_memory (void)
 	    mapped_free (chipmemory);
 	chipmemory = 0;
 
-	allocated_chipmem = prefs_chipmem_size;
+	allocated_chipmem = max (prefs_chipmem_size, 0x00040000);
 	chipmem_mask = allocated_chipmem - 1;
 
 	chipmemory = (uae_u8 *)mapped_malloc (allocated_chipmem, "chip");
@@ -1138,6 +1139,24 @@ static void allocate_memory (void)
 	    allocated_chipmem = 0;
 	} else
 	    do_put_mem_long ((uae_u32 *)(chipmemory + 4), swab_l(0));
+    }
+
+    if (allocated_bogomem != prefs_bogomem_size) {
+    if (bogomemory)
+        mapped_free (bogomemory);
+    bogomemory = 0;
+
+    allocated_bogomem = max (prefs_bogomem_size, 0x00000000);
+    bogomem_mask = allocated_bogomem - 1;
+
+    if (allocated_bogomem) {
+        bogomemory = (uae_u8 *)mapped_malloc (allocated_bogomem, "bogo");
+
+        if (bogomemory == 0) {
+            write_log ("Fatal error: out of memory for bogomem.\n");
+            allocated_bogomem = 0;
+        }
+    }
     }
 
     if (savestate_state == STATE_RESTORE)

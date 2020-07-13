@@ -121,6 +121,7 @@ void default_prefs ()
     strcpy (romfile, ROM_PATH_PREFIX "kick.rom");
 
     prefs_chipmem_size=0x00100000;
+    prefs_bogomem_size=0x00000000;
 }
 
 int quit_program = 0;
