@@ -7,6 +7,25 @@ static void LNAME (int dpix, int stoppos)
 
     unsigned short *buf = ((unsigned short *)xlinebuffer);
     int spix=src_pixel;
+
+    /* HAM CASE */
+    if (dp_for_drawing->ham_seen) {
+        while (dpix < stoppos) {
+            buf[dpix++] = (xcolors[ham_linebuf[spix]]);
+            spix += SRC_INC;
+        }
+    } else if (bplehb)  {
+        while (dpix < stoppos) {
+            uae_u32 spix_val = pixdata.apixels[spix];
+            register unsigned short d = pixdata.apixels[spix];
+            if (d <= 31)
+                buf[dpix++] = colors_for_drawing.acolors[d];
+	        else
+                buf[dpix++] = xcolors[(colors_for_drawing.color_uae_regs_ecs[d - 32] >> 1) & 0x777];
+            spix += SRC_INC;
+        }
+    } else {
+
 #if defined(DREAMCAST)
 	    register int resto=(((unsigned)&buf[dpix])&0x1f);
 	    if (resto)
@@ -70,6 +89,7 @@ static void LNAME (int dpix, int stoppos)
 	while (dpix < stoppos) {
 	    buf[dpix++]= (colors_for_drawing.acolors[pixdata.apixels[spix]]);
 	    spix += SRC_INC;
+	}
 	}
 #endif
     src_pixel = (int)spix;
